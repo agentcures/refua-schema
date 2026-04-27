@@ -41,9 +41,9 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://agentcures.com/"
-Repository = "https://github.com/agentcures/refua"
-Documentation = "https://github.com/agentcures/refua#readme"
-Issues = "https://github.com/agentcures/refua/issues"
+Repository = "https://github.com/agentcures/refua-schema"
+Documentation = "https://github.com/agentcures/refua-schema#readme"
+Issues = "https://github.com/agentcures/refua-schema/issues"
 
 [project.optional-dependencies]
 dev = [
