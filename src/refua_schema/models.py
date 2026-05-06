@@ -24,7 +24,13 @@ from pydantic import (
     model_validator,
 )
 from refua import DNA, RNA, AntibodyBinders, Binder, Complex, Protein, SmallMolecule
-from refua_clinical.models import SimulationConfig, TrialSimulationResult
+from refua_clinical.models import (
+    ClinicalTrial as RefuaClinicalTrial,
+)
+from refua_clinical.models import (
+    SimulationConfig,
+    TrialSimulationResult,
+)
 from refua_preclinical.models import PreclinicalStudySpec
 from refua_regulatory.models import (
     ArtifactRef,
@@ -490,6 +496,10 @@ class ClinicalTrial(SchemaNode):
         default=None,
         description="Optional refua-clinical simulation result associated with the trial.",
     )
+    clinical_trial: RefuaClinicalTrial | None = Field(
+        default=None,
+        description="Complete refua-clinical trial aggregate with typed config, result, artifacts, and context.",
+    )
     metadata: MetadataDict = Field(
         default_factory=dict,
         description="Additional trial metadata such as geography, inclusion rules, or operational notes.",
@@ -507,6 +517,14 @@ class ClinicalTrial(SchemaNode):
 
     @model_validator(mode="after")
     def _validate_simulation_assets(self) -> Self:
+        if self.clinical_trial is not None:
+            self.clinical_trial.validate_consistency()
+            if self.clinical_trial.trial_id != self.trial_id:
+                raise ValueError("clinical_trial.trial_id must match trial_id.")
+            if self.simulation_config is None:
+                self.simulation_config = self.clinical_trial.config
+            if self.simulation_result is None:
+                self.simulation_result = self.clinical_trial.result
         if self.simulation_result is not None and self.simulation_config is None:
             self.simulation_config = self.simulation_result.config
         if (
@@ -519,6 +537,29 @@ class ClinicalTrial(SchemaNode):
             )
         return self
 
+    @classmethod
+    def from_refua_clinical(
+        cls,
+        trial: RefuaClinicalTrial,
+        *,
+        metadata: MetadataDict | None = None,
+    ) -> ClinicalTrial:
+        """Build a schema trial wrapper from a complete refua-clinical trial."""
+        trial.validate_consistency()
+        return cls(
+            trial_id=trial.trial_id,
+            title=trial.title,
+            phase=trial.phase,
+            status=trial.status,
+            indication=trial.indication,
+            sponsor=trial.sponsor,
+            registry_id=trial.registry_id,
+            simulation_config=trial.config,
+            simulation_result=trial.result,
+            clinical_trial=trial,
+            metadata=dict(metadata or trial.metadata),
+        )
+
     def with_simulation(
         self,
         *,
@@ -530,6 +571,21 @@ class ClinicalTrial(SchemaNode):
             self.simulation_config = config
         if result is not None:
             self.simulation_result = result
+        return self
+
+    def with_refua_clinical(self, trial: RefuaClinicalTrial) -> ClinicalTrial:
+        """Attach a complete refua-clinical trial aggregate."""
+        trial.validate_consistency()
+        self.clinical_trial = trial
+        self.trial_id = trial.trial_id
+        self.title = trial.title
+        self.phase = trial.phase
+        self.status = trial.status
+        self.indication = trial.indication
+        self.sponsor = trial.sponsor
+        self.registry_id = trial.registry_id
+        self.simulation_config = trial.config
+        self.simulation_result = trial.result
         return self
 
 

@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from refua import Complex, Protein, SmallMolecule
 from refua_clinical.models import default_simulation_config
+from refua_clinical.object_api import ClinicalStudy
 from refua_clinical.trial import simulate_trials
 from refua_preclinical.models import default_study_spec
 from refua_regulatory.models import ArtifactRef
@@ -196,3 +197,40 @@ def test_assignment_validation_applies_after_object_creation() -> None:
     )
     with pytest.raises(ValueError, match="confidence_score"):
         evidence.confidence_score = 5.0
+
+
+def test_clinical_trial_round_trip_preserves_refua_clinical_aggregate() -> None:
+    run = ClinicalStudy.default().trial(trial_id="schema-rich-trial", replicates=5).simulate()
+    refua_trial = run.to_trial(title="Schema Rich Trial")
+    schema_trial = ClinicalTrial.from_refua_clinical(refua_trial)
+
+    portfolio = Portfolio(
+        portfolio_id="pf-rich",
+        name="Rich Clinical Portfolio",
+        diseases=[
+            Disease(
+                disease_id="dis-rich",
+                name="Rich Disease",
+                rationales=[
+                    Rationale(
+                        rationale_id="rat-rich",
+                        title="Rich Rationale",
+                        hypothesis="Clinical aggregate should round-trip.",
+                        drugs=[
+                            Drug.from_smiles(
+                                drug_id="drug-rich",
+                                name="Rich Drug",
+                                smiles="CCO",
+                            ).add_clinical_trial(schema_trial)
+                        ],
+                    )
+                ],
+            )
+        ],
+    )
+
+    restored = portfolio_from_mapping(portfolio_to_mapping(portfolio))
+    restored_trial = restored.diseases[0].rationales[0].drugs[0].clinical_trials[0]
+    assert restored_trial.clinical_trial is not None
+    assert restored_trial.clinical_trial.result is not None
+    assert restored_trial.simulation_result is not None

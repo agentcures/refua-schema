@@ -17,7 +17,15 @@ from typing import Any, cast
 import yaml
 from rdkit import Chem
 from refua import DNA, RNA, AntibodyBinders, Binder, Complex, Protein, SmallMolecule
-from refua_clinical.io import config_from_mapping, config_to_mapping
+from refua_clinical.io import (
+    clinical_trial_from_mapping,
+    clinical_trial_to_mapping,
+    config_from_mapping,
+    config_to_mapping,
+)
+from refua_clinical.models import (
+    ClinicalTrial as RefuaClinicalTrial,
+)
 from refua_clinical.models import (
     InterimUpdate,
     ReplicateResult,
@@ -173,6 +181,7 @@ def _serialize(value: Any) -> Any:
             "registry_id": value.registry_id,
             "simulation_config": _serialize(value.simulation_config),
             "simulation_result": _serialize(value.simulation_result),
+            "clinical_trial": _serialize(value.clinical_trial),
             "metadata": _serialize(value.metadata),
         }
     if isinstance(value, Evidence | Biomarker | Assay | Modality | AdmetProfile):
@@ -218,6 +227,8 @@ def _serialize(value: Any) -> Any:
         return {_TYPE_KEY: "SimulationConfig", **config_to_mapping(value)}
     if isinstance(value, TrialSimulationResult):
         return {_TYPE_KEY: "TrialSimulationResult", **trial_result_to_mapping(value)}
+    if isinstance(value, RefuaClinicalTrial):
+        return {_TYPE_KEY: "RefuaClinicalTrial", **clinical_trial_to_mapping(value)}
     if isinstance(value, PreclinicalStudySpec):
         return {_TYPE_KEY: "PreclinicalStudySpec", **study_spec_to_mapping(value)}
     if isinstance(value, ArtifactRef):
@@ -350,6 +361,7 @@ def _drug_from_mapping(data: Mapping[str, Any]) -> Drug:
 def _clinical_trial_from_mapping(data: Mapping[str, Any]) -> ClinicalTrial:
     simulation_config_raw = data.get("simulation_config")
     simulation_result_raw = data.get("simulation_result")
+    clinical_trial_raw = data.get("clinical_trial")
     return ClinicalTrial(
         trial_id=_required_str(data, "trial_id"),
         title=_required_str(data, "title"),
@@ -366,6 +378,11 @@ def _clinical_trial_from_mapping(data: Mapping[str, Any]) -> ClinicalTrial:
         simulation_result=(
             cast(TrialSimulationResult, _external_from_mapping(simulation_result_raw))
             if isinstance(simulation_result_raw, Mapping)
+            else None
+        ),
+        clinical_trial=(
+            cast(RefuaClinicalTrial, _external_from_mapping(clinical_trial_raw))
+            if isinstance(clinical_trial_raw, Mapping)
             else None
         ),
         metadata=_mapping(data.get("metadata")),
@@ -469,6 +486,8 @@ def _external_from_mapping(raw: Any) -> Any:
         return config_from_mapping(payload)
     if type_name == "TrialSimulationResult":
         return _trial_result_from_mapping(payload)
+    if type_name == "RefuaClinicalTrial":
+        return clinical_trial_from_mapping(payload)
     if type_name == "PreclinicalStudySpec":
         return study_spec_from_mapping(payload)
     if type_name == "ArtifactRef":
