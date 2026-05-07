@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "refua-schema"
-version = "0.7.2"
+version = "0.7.3"
 description = "Portfolio-to-drug object schema for the Refua drug discovery ecosystem."
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
@@ -34,7 +34,7 @@ dependencies = [
   "pydantic>=2.9.0",
   "pyyaml>=6.0.1",
   "refua>=0.7.2",
-  "refua-clinical>=0.8.0",
+  "refua-clinical>=0.8.1",
   "refua-preclinical>=0.7.1",
   "refua-regulatory>=0.7.1",
 ]
