@@ -80,7 +80,9 @@ def load_mapping(path: str | Path) -> dict[str, Any]:
 def dump_json(path: str | Path, payload: dict[str, Any]) -> None:
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    out.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
 
 
 def dump_yaml(path: str | Path, payload: dict[str, Any]) -> None:
@@ -161,7 +163,9 @@ def _serialize(value: Any) -> Any:
             "assays": [_serialize(item) for item in value.assays],
             "biomarkers": [_serialize(item) for item in value.biomarkers],
             "evidence": [_serialize(item) for item in value.evidence],
-            "preclinical_studies": [_serialize(item) for item in value.preclinical_studies],
+            "preclinical_studies": [
+                _serialize(item) for item in value.preclinical_studies
+            ],
             "clinical_trials": [_serialize(item) for item in value.clinical_trials],
             "artifact_refs": [_serialize(item) for item in value.artifact_refs],
             "evidence_bundles": [_serialize(item) for item in value.evidence_bundles],
@@ -185,7 +189,10 @@ def _serialize(value: Any) -> Any:
             "metadata": _serialize(value.metadata),
         }
     if isinstance(value, Evidence | Biomarker | Assay | Modality | AdmetProfile):
-        return {key: _serialize(item) for key, item in value.model_dump(mode="python").items()}
+        return {
+            key: _serialize(item)
+            for key, item in value.model_dump(mode="python").items()
+        }
 
     if isinstance(value, Protein):
         return {
@@ -277,7 +284,10 @@ def _portfolio_from_mapping(data: Mapping[str, Any]) -> Portfolio:
         name=_required_str(data, "name"),
         owner=_optional_str(data.get("owner")),
         strategy=_optional_str(data.get("strategy")),
-        diseases=[_disease_from_mapping(item) for item in _list_of_mappings(data.get("diseases"))],
+        diseases=[
+            _disease_from_mapping(item)
+            for item in _list_of_mappings(data.get("diseases"))
+        ],
         metadata=_mapping(data.get("metadata")),
     )
 
@@ -288,9 +298,18 @@ def _disease_from_mapping(data: Mapping[str, Any]) -> Disease:
         name=_required_str(data, "name"),
         therapeutic_area=_optional_str(data.get("therapeutic_area")),
         stage=_optional_str(data.get("stage")),
-        biomarkers=[_biomarker_from_mapping(item) for item in _list_of_mappings(data.get("biomarkers"))],
-        evidence=[_evidence_from_mapping(item) for item in _list_of_mappings(data.get("evidence"))],
-        rationales=[_rationale_from_mapping(item) for item in _list_of_mappings(data.get("rationales"))],
+        biomarkers=[
+            _biomarker_from_mapping(item)
+            for item in _list_of_mappings(data.get("biomarkers"))
+        ],
+        evidence=[
+            _evidence_from_mapping(item)
+            for item in _list_of_mappings(data.get("evidence"))
+        ],
+        rationales=[
+            _rationale_from_mapping(item)
+            for item in _list_of_mappings(data.get("rationales"))
+        ],
         metadata=_mapping(data.get("metadata")),
     )
 
@@ -301,12 +320,28 @@ def _rationale_from_mapping(data: Mapping[str, Any]) -> Rationale:
         title=_required_str(data, "title"),
         hypothesis=_required_str(data, "hypothesis"),
         mechanism=_optional_str(data.get("mechanism")),
-        proteins=[cast(Protein, _external_from_mapping(item)) for item in _list_of_mappings(data.get("proteins"))],
-        refua_objects=[_external_from_mapping(item) for item in _list_of_mappings(data.get("refua_objects"))],
-        biomarkers=[_biomarker_from_mapping(item) for item in _list_of_mappings(data.get("biomarkers"))],
-        evidence=[_evidence_from_mapping(item) for item in _list_of_mappings(data.get("evidence"))],
-        assays=[_assay_from_mapping(item) for item in _list_of_mappings(data.get("assays"))],
-        drugs=[_drug_from_mapping(item) for item in _list_of_mappings(data.get("drugs"))],
+        proteins=[
+            cast(Protein, _external_from_mapping(item))
+            for item in _list_of_mappings(data.get("proteins"))
+        ],
+        refua_objects=[
+            _external_from_mapping(item)
+            for item in _list_of_mappings(data.get("refua_objects"))
+        ],
+        biomarkers=[
+            _biomarker_from_mapping(item)
+            for item in _list_of_mappings(data.get("biomarkers"))
+        ],
+        evidence=[
+            _evidence_from_mapping(item)
+            for item in _list_of_mappings(data.get("evidence"))
+        ],
+        assays=[
+            _assay_from_mapping(item) for item in _list_of_mappings(data.get("assays"))
+        ],
+        drugs=[
+            _drug_from_mapping(item) for item in _list_of_mappings(data.get("drugs"))
+        ],
         metadata=_mapping(data.get("metadata")),
     )
 
@@ -321,11 +356,25 @@ def _drug_from_mapping(data: Mapping[str, Any]) -> Drug:
             cast(SmallMolecule, _external_from_mapping(item))
             for item in _list_of_mappings(data.get("structures"))
         ],
-        refua_objects=[_external_from_mapping(item) for item in _list_of_mappings(data.get("refua_objects"))],
-        admet_profiles=[_admet_from_mapping(item) for item in _list_of_mappings(data.get("admet_profiles"))],
-        assays=[_assay_from_mapping(item) for item in _list_of_mappings(data.get("assays"))],
-        biomarkers=[_biomarker_from_mapping(item) for item in _list_of_mappings(data.get("biomarkers"))],
-        evidence=[_evidence_from_mapping(item) for item in _list_of_mappings(data.get("evidence"))],
+        refua_objects=[
+            _external_from_mapping(item)
+            for item in _list_of_mappings(data.get("refua_objects"))
+        ],
+        admet_profiles=[
+            _admet_from_mapping(item)
+            for item in _list_of_mappings(data.get("admet_profiles"))
+        ],
+        assays=[
+            _assay_from_mapping(item) for item in _list_of_mappings(data.get("assays"))
+        ],
+        biomarkers=[
+            _biomarker_from_mapping(item)
+            for item in _list_of_mappings(data.get("biomarkers"))
+        ],
+        evidence=[
+            _evidence_from_mapping(item)
+            for item in _list_of_mappings(data.get("evidence"))
+        ],
         preclinical_studies=[
             cast(PreclinicalStudySpec, _external_from_mapping(item))
             for item in _list_of_mappings(data.get("preclinical_studies"))
@@ -476,7 +525,10 @@ def _external_from_mapping(raw: Any) -> Any:
         name = _optional_str(payload.get("name"))
         return SmallMolecule.from_smiles(smiles, name=name)
     if type_name == "Complex":
-        entities = [_external_from_mapping(item) for item in _list_of_mappings(payload.get("entities"))]
+        entities = [
+            _external_from_mapping(item)
+            for item in _list_of_mappings(payload.get("entities"))
+        ]
         return Complex(
             entities=entities,
             name=str(payload.get("name", "complex")),
@@ -610,9 +662,12 @@ def _trial_result_from_mapping(data: Mapping[str, Any]) -> TrialSimulationResult
                     if row.get("stop_interim_index") is not None
                     else None
                 ),
-                effective_external_weight=float(row.get("effective_external_weight", 0.0)),
+                effective_external_weight=float(
+                    row.get("effective_external_weight", 0.0)
+                ),
                 decision_cards=[
-                    _mapping(card) for card in row.get("decision_cards", [])
+                    _mapping(card)
+                    for card in row.get("decision_cards", [])
                     if isinstance(card, Mapping)
                 ],
                 allocation_trace=allocation_trace,

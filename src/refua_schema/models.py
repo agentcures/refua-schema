@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Annotated, Any, Self
+from typing import Annotated, Any, Self, TypeAlias
 
 from pydantic import (
     BaseModel,
@@ -50,7 +50,9 @@ IdentifierStr = Annotated[
     ),
 ]
 MetadataDict = dict[str, Any]
-RefuaObject = Protein | DNA | RNA | Binder | AntibodyBinders | SmallMolecule | Complex
+RefuaObject: TypeAlias = (
+    Protein | DNA | RNA | Binder | AntibodyBinders | SmallMolecule | Complex
+)
 
 _REFUA_OBJECT_TYPES: tuple[type[Any], ...] = (
     Protein,
@@ -108,7 +110,9 @@ def _validate_probability_mapping(
         key_text = str(key).strip()
         if not key_text:
             raise ValueError(f"{field_name} cannot contain blank keys.")
-        normalized[key_text] = _validate_probability(float(item), field_name=f"{field_name}.{key_text}")
+        normalized[key_text] = _validate_probability(
+            float(item), field_name=f"{field_name}.{key_text}"
+        )
     return normalized
 
 
@@ -126,11 +130,15 @@ def _validate_string_list(values: list[str], *, field_name: str) -> list[str]:
     return normalized
 
 
-def _validate_refua_objects(objects: list[RefuaObject], *, field_name: str) -> list[RefuaObject]:
+def _validate_refua_objects(
+    objects: list[RefuaObject], *, field_name: str
+) -> list[RefuaObject]:
     for item in objects:
         if not isinstance(item, _REFUA_OBJECT_TYPES):
             allowed = ", ".join(cls.__name__ for cls in _REFUA_OBJECT_TYPES)
-            raise TypeError(f"{field_name} entries must be Refua objects. Allowed: {allowed}.")
+            raise TypeError(
+                f"{field_name} entries must be Refua objects. Allowed: {allowed}."
+            )
     return objects
 
 
@@ -332,7 +340,9 @@ class Assay(SchemaNode):
         if isinstance(value, str):
             text = value.strip()
             if not text:
-                raise ValueError("result_value cannot be blank when provided as a string.")
+                raise ValueError(
+                    "result_value cannot be blank when provided as a string."
+                )
             return text
         return value
 
@@ -530,7 +540,8 @@ class ClinicalTrial(SchemaNode):
         if (
             self.simulation_result is not None
             and self.simulation_config is not None
-            and self.simulation_result.config.trial_id != self.simulation_config.trial_id
+            and self.simulation_result.config.trial_id
+            != self.simulation_config.trial_id
         ):
             raise ValueError(
                 "simulation_result.config.trial_id must match simulation_config.trial_id."
@@ -680,7 +691,9 @@ class Drug(SchemaNode):
 
     @field_validator("refua_objects")
     @classmethod
-    def _validate_refua_objects_field(cls, value: list[RefuaObject]) -> list[RefuaObject]:
+    def _validate_refua_objects_field(
+        cls, value: list[RefuaObject]
+    ) -> list[RefuaObject]:
         return _validate_refua_objects(value, field_name="refua_objects")
 
     @field_validator("preclinical_studies")
@@ -691,7 +704,9 @@ class Drug(SchemaNode):
     ) -> list[PreclinicalStudySpec]:
         for item in value:
             if not isinstance(item, PreclinicalStudySpec):
-                raise TypeError("preclinical_studies entries must be PreclinicalStudySpec instances.")
+                raise TypeError(
+                    "preclinical_studies entries must be PreclinicalStudySpec instances."
+                )
         return value
 
     @field_validator("artifact_refs")
@@ -717,18 +732,26 @@ class Drug(SchemaNode):
 
     @field_validator("decision_records")
     @classmethod
-    def _validate_decision_records(cls, value: list[DecisionRecord]) -> list[DecisionRecord]:
+    def _validate_decision_records(
+        cls, value: list[DecisionRecord]
+    ) -> list[DecisionRecord]:
         for item in value:
             if not isinstance(item, DecisionRecord):
-                raise TypeError("decision_records entries must be DecisionRecord instances.")
+                raise TypeError(
+                    "decision_records entries must be DecisionRecord instances."
+                )
         return value
 
     @field_validator("data_provenance")
     @classmethod
-    def _validate_data_provenance(cls, value: list[DataProvenance]) -> list[DataProvenance]:
+    def _validate_data_provenance(
+        cls, value: list[DataProvenance]
+    ) -> list[DataProvenance]:
         for item in value:
             if not isinstance(item, DataProvenance):
-                raise TypeError("data_provenance entries must be DataProvenance instances.")
+                raise TypeError(
+                    "data_provenance entries must be DataProvenance instances."
+                )
         return value
 
     @field_validator("model_provenance")
@@ -739,7 +762,9 @@ class Drug(SchemaNode):
     ) -> list[ModelProvenance]:
         for item in value:
             if not isinstance(item, ModelProvenance):
-                raise TypeError("model_provenance entries must be ModelProvenance instances.")
+                raise TypeError(
+                    "model_provenance entries must be ModelProvenance instances."
+                )
         return value
 
     @field_validator("metadata")
@@ -874,7 +899,9 @@ class Rationale(SchemaNode):
 
     @field_validator("refua_objects")
     @classmethod
-    def _validate_refua_objects_field(cls, value: list[RefuaObject]) -> list[RefuaObject]:
+    def _validate_refua_objects_field(
+        cls, value: list[RefuaObject]
+    ) -> list[RefuaObject]:
         return _validate_refua_objects(value, field_name="refua_objects")
 
     @field_validator("metadata")
@@ -1024,7 +1051,9 @@ class Portfolio(SchemaNode):
 
     def iter_rationales(self) -> list[Rationale]:
         """Return a flat list of all rationales nested under the portfolio."""
-        return [rationale for disease in self.diseases for rationale in disease.rationales]
+        return [
+            rationale for disease in self.diseases for rationale in disease.rationales
+        ]
 
     def iter_drugs(self) -> list[Drug]:
         """Return a flat list of all drug candidates nested under the portfolio."""

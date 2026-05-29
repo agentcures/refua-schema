@@ -47,7 +47,9 @@ def test_portfolio_hierarchy_reuses_refua_objects() -> None:
         drug_id="lead-1",
         name="Lead 1",
         smiles="CCO",
-        modality=Modality(name="oral small molecule", kind="small_molecule", route="oral"),
+        modality=Modality(
+            name="oral small molecule", kind="small_molecule", route="oral"
+        ),
         mechanism_of_action="Target inhibition",
     )
     drug.add_refua_object(structure_model)
@@ -154,7 +156,9 @@ def test_portfolio_round_trip_preserves_external_types(tmp_path: Path) -> None:
 
     assert isinstance(restored.diseases[0].rationales[0].proteins[0], Protein)
     assert isinstance(restored.diseases[0].rationales[0].refua_objects[0], Complex)
-    assert isinstance(restored.diseases[0].rationales[0].drugs[0].structures[0], SmallMolecule)
+    assert isinstance(
+        restored.diseases[0].rationales[0].drugs[0].structures[0], SmallMolecule
+    )
 
     out_path = tmp_path / "portfolio.yaml"
     portfolio.save(out_path)
@@ -200,7 +204,11 @@ def test_assignment_validation_applies_after_object_creation() -> None:
 
 
 def test_clinical_trial_round_trip_preserves_refua_clinical_aggregate() -> None:
-    run = ClinicalStudy.default().trial(trial_id="schema-rich-trial", replicates=5).simulate()
+    run = (
+        ClinicalStudy.default()
+        .trial(trial_id="schema-rich-trial", replicates=5)
+        .simulate()
+    )
     refua_trial = run.to_trial(title="Schema Rich Trial")
     schema_trial = ClinicalTrial.from_refua_clinical(refua_trial)
 

@@ -53,10 +53,12 @@ def _drug_key(
     rationale_id: str,
     drug_id: str,
 ) -> str:
-    return f"{portfolio_id}:disease:{disease_id}:rationale:{rationale_id}:drug:{drug_id}"
+    return (
+        f"{portfolio_id}:disease:{disease_id}:rationale:{rationale_id}:drug:{drug_id}"
+    )
 
 
-class PortfolioRecord(SQLModel, table=True):
+class PortfolioRecord(SQLModel, table=True):  # type: ignore[call-arg]
     """Relational record storing the canonical serialized portfolio payload."""
 
     __tablename__ = "portfolio"
@@ -83,7 +85,7 @@ class PortfolioRecord(SQLModel, table=True):
     )
 
 
-class DiseaseRecord(SQLModel, table=True):
+class DiseaseRecord(SQLModel, table=True):  # type: ignore[call-arg]
     """Relational index row for a disease nested under a portfolio."""
 
     __tablename__ = "portfolio_disease"
@@ -115,7 +117,7 @@ class DiseaseRecord(SQLModel, table=True):
     )
 
 
-class RationaleRecord(SQLModel, table=True):
+class RationaleRecord(SQLModel, table=True):  # type: ignore[call-arg]
     """Relational index row for a rationale nested under a disease."""
 
     __tablename__ = "portfolio_rationale"
@@ -148,7 +150,7 @@ class RationaleRecord(SQLModel, table=True):
     )
 
 
-class DrugRecord(SQLModel, table=True):
+class DrugRecord(SQLModel, table=True):  # type: ignore[call-arg]
     """Relational index row for a drug nested under a rationale."""
 
     __tablename__ = "portfolio_drug"
@@ -194,7 +196,7 @@ def create_sqlite_engine(
     path: str | Path = ":memory:",
     *,
     echo: bool = False,
-):
+) -> Any:
     """Create a SQLite engine for SQLModel-backed schema persistence."""
     if str(path) == ":memory:":
         url = "sqlite://"
@@ -299,9 +301,15 @@ def _drug_records_from_model(portfolio: Portfolio) -> list[DrugRecord]:
 
 def _delete_existing_portfolio_rows(session: Session, portfolio_id: str) -> None:
     session.exec(delete(DrugRecord).where(DrugRecord.portfolio_id == portfolio_id))
-    session.exec(delete(RationaleRecord).where(RationaleRecord.portfolio_id == portfolio_id))
-    session.exec(delete(DiseaseRecord).where(DiseaseRecord.portfolio_id == portfolio_id))
-    session.exec(delete(PortfolioRecord).where(PortfolioRecord.portfolio_id == portfolio_id))
+    session.exec(
+        delete(RationaleRecord).where(RationaleRecord.portfolio_id == portfolio_id)
+    )
+    session.exec(
+        delete(DiseaseRecord).where(DiseaseRecord.portfolio_id == portfolio_id)
+    )
+    session.exec(
+        delete(PortfolioRecord).where(PortfolioRecord.portfolio_id == portfolio_id)
+    )
 
 
 def save_portfolio(

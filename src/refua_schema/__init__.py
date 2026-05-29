@@ -72,6 +72,7 @@ __all__ = [
     "RefuaObject",
     "SchemaNode",
     "SchemaRoot",
+    "__version__",
     "dump_json",
     "dump_portfolio",
     "dump_yaml",
@@ -80,5 +81,4 @@ __all__ = [
     "portfolio_from_mapping",
     "portfolio_to_mapping",
     "schema_to_mapping",
-    "__version__",
 ]
